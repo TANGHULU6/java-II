@@ -1,6 +1,3 @@
-package ass1;
-
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -146,47 +143,47 @@ public class OnlineCoursesAnalyzer {
 
     }
 
-    public static void main(String[] args) {
-        String s="s,s,ss,s, ssadad,dedq,asd";
-        String[] sss=(splitForBug("," ));
-        System.out.println(Arrays.toString(sss));
-
-
-
-    }
+   // public static void main(String[] args) {
+//        String s="s,s,ss,s, ssadad,dedq,asd";
+//        String[] sss=(splitForBug(s));
+//        System.out.println(Arrays.toString(sss));
+//}
 
     public OnlineCoursesAnalyzer(String datasetPath) throws IOException {
-        courses=Files.lines(Path.of(datasetPath)).map(l->l.split(",")).map(b->new course(b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22]));
+        courses=Files.lines(Path.of(datasetPath)).map(OnlineCoursesAnalyzer::splitForBug).map(b->new course(b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22]));
     }
     public Map<String, Integer> getPtcpCountByInst(){
         return courses.sorted(Comparator.comparing(course::getInstitution)).collect(Collectors.groupingBy(course::getInstitution,Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
     }
-//    public Map<String, Integer> getPtcpCountByInstAndSubject(){
-//
-//    }
-//    public Map<String, List<List<String>>> getCourseListOfInstructor(){
-//
-//    }
-//    public List<String> getCourses(int topK, String by){
-//
-//    }
-//    public List<String> searchCourses(String courseSubject, double
-//            percentAudited, double totalCourseHours){
-//
-//    }
-//    public List<String> recommendCourses(int age, int gender, int
-//            isBachelorOrHigher){
-//
-//    }
+    public Map<String, Integer> getPtcpCountByInstAndSubject(){
+        return null;
+        //return courses.sorted(Comparator.comparing()).collect(Collectors.groupingBy(course::getInstitution));
+    }
+    public Map<String, List<List<String>>> getCourseListOfInstructor(){
+        return null;
+    }
+    public List<String> getCourses(int topK, String by){
+        return null;
+
+    }
+    public List<String> searchCourses(String courseSubject, double
+            percentAudited, double totalCourseHours){
+        return null;
+
+    }
+    public List<String> recommendCourses(int age, int gender, int
+            isBachelorOrHigher){
+        return null;
+
+    }
 
 
     protected static String[] splitForBug (String regex){
-        Stream characters = regex.chars().mapToObj(i -> (char) i);
-
-        //characters.forEach(System.out::println);
-        characters.forEach(x-> {
-            (int)x == 32 ? x = "" :;
-        });
-
+        String regex1=regex.replaceAll(", ","}");
+        String[] temp=regex1.split(",");
+        for (int i = 0; i < temp.length; i++) {
+            temp[i]=temp[i].replaceAll("}",", ");
+        }
+        return temp;
     }
 }
