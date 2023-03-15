@@ -7,13 +7,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OnlineCoursesAnalyzer {
-    Stream<course> courses;
+    final List<course> courses;
     public static class course{
         private String Institution, CourseBF_Number,CourseBF_Title,Instructors, CourseBF_Subject;
         private Date Launch_Date;
         private int Participants_CourseBF_Content_Accessed,Year,Honor_Code_Certificates,Audited_more50_CourseBF_Content_Accessed,Certified;
         private double $Audited,$Certified,$Certified_of_50_CourseBF_Content_Accessed,$Played_Video,$Posted_in_Forum,$Grade_Higher_Than_Zero ,Total_CourseBF_Hours,Median_Hours_for_Certification,$Male,$Female,$Bachelor_Degree_or_Higher;
         private int Median_Age;
+        private String pair;
+
 
         public String getInstitution() {
             return Institution;
@@ -107,13 +109,14 @@ public class OnlineCoursesAnalyzer {
             return Median_Age;
         }
 
-        public course(String institution, String courseBF_Number, String courseBF_Title, String instructors, String courseBF_Subject, String launch_Date, String participants_CourseBF_Content_Accessed, String year, String honor_Code_Certificates, String audited_more50_CourseBF_Content_Accessed, String certified, String $Audited, String $Certified, String $Certified_of_50_CourseBF_Content_Accessed, String $Played_Video, String $Posted_in_Forum, String $Grade_Higher_Than_Zero, String total_CourseBF_Hours, String median_Hours_for_Certification, String $Male, String $Female, String $Bachelor_Degree_or_Higher, String median_Age){
+        public course(String institution, String courseBF_Number, String launch_Date, String courseBF_Title, String instructors, String courseBF_Subject, String year,String honor_Code_Certificates,String participants_CourseBF_Content_Accessed,   String audited_more50_CourseBF_Content_Accessed, String certified, String $Audited, String $Certified, String $Certified_of_50_CourseBF_Content_Accessed, String $Played_Video, String $Posted_in_Forum, String $Grade_Higher_Than_Zero, String total_CourseBF_Hours, String median_Hours_for_Certification,  String median_Age,String $Male, String $Female, String $Bachelor_Degree_or_Higher){
             try{
                 Institution = institution;
                 CourseBF_Number = courseBF_Number;
                 CourseBF_Title = courseBF_Title;
                 Instructors = instructors;
                 CourseBF_Subject = courseBF_Subject;
+                pair=institution+"-"+courseBF_Subject;
                 SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
                 Launch_Date = format.parse(launch_Date);
                 Participants_CourseBF_Content_Accessed = Integer.parseInt(participants_CourseBF_Content_Accessed);
@@ -140,7 +143,9 @@ public class OnlineCoursesAnalyzer {
         }
 
 
-
+        public String getPair() {
+            return pair;
+        }
     }
 
    // public static void main(String[] args) {
@@ -149,16 +154,31 @@ public class OnlineCoursesAnalyzer {
 //        System.out.println(Arrays.toString(sss));
 //}
 
+
+    public Stream<course> getCourses() {
+        return courses.stream();
+    }
+
     public OnlineCoursesAnalyzer(String datasetPath) throws IOException {
-        courses=Files.lines(Path.of(datasetPath)).map(OnlineCoursesAnalyzer::splitForBug).map(b->new course(b[0],b[1],b[2],b[3],b[4],b[5],b[6],b[7],b[8],b[9],b[10],b[11],b[12],b[13],b[14],b[15],b[16],b[17],b[18],b[19],b[20],b[21],b[22]));
+        courses=Files.lines(Path.of(datasetPath)).filter(sss->!sss.startsWith("Institution")).map(OnlineCoursesAnalyzer::splitForBug).map(b-> new course(b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15], b[16], b[17], b[18], b[19], b[20], b[21], b[22])).toList();
     }
     public Map<String, Integer> getPtcpCountByInst(){
-        return courses.sorted(Comparator.comparing(course::getInstitution)).collect(Collectors.groupingBy(course::getInstitution,Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
+        Map<String, Integer> answer= getCourses().sorted(Comparator.comparing(course::getInstitution))
+                .collect(Collectors.groupingBy(course::getInstitution,LinkedHashMap::new,Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
+
+        return answer;
     }
     public Map<String, Integer> getPtcpCountByInstAndSubject(){
-        return null;
-        //return courses.sorted(Comparator.comparing()).collect(Collectors.groupingBy(course::getInstitution));
+
+
+        Map<String, Integer> answer=getCourses().collect(Collectors.groupingBy(course::getPair,()-> {
+            return new TreeMap<String,Integer>(Comparator.comparing().reversed().thenComparing());
+        },Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(answer.entrySet());
+        list.sort(Comparator.comparing().reversed().thenComparing());
+        return answer;
     }
+
     public Map<String, List<List<String>>> getCourseListOfInstructor(){
         return null;
     }
