@@ -114,9 +114,9 @@ public class OnlineCoursesAnalyzer {
                 Institution = institution;
                 CourseBF_Number = courseBF_Number;
                 CourseBF_Title = courseBF_Title;
-                Instructors = instructors;
-                CourseBF_Subject = courseBF_Subject;
-                pair=institution+"-"+courseBF_Subject;
+                Instructors = instructors.replaceAll("\"","");
+                CourseBF_Subject = courseBF_Subject.replaceAll("\"","");
+                pair=Institution+"-"+CourseBF_Subject;
                 SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
                 Launch_Date = format.parse(launch_Date);
                 Participants_CourseBF_Content_Accessed = Integer.parseInt(participants_CourseBF_Content_Accessed);
@@ -171,16 +171,35 @@ public class OnlineCoursesAnalyzer {
     public Map<String, Integer> getPtcpCountByInstAndSubject(){
 
 
-        Map<String, Integer> answer=getCourses().collect(Collectors.groupingBy(course::getPair,()-> {
-            return new TreeMap<String,Integer>(Comparator.comparing().reversed().thenComparing());
-        },Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
-        List<Map.Entry<String,Integer>> list = new ArrayList<>(answer.entrySet());
-        list.sort(Comparator.comparing().reversed().thenComparing());
+        Map<String, Integer> answer1=getCourses().collect(Collectors.groupingBy(course::getPair,Collectors.summingInt(course::getParticipants_CourseBF_Content_Accessed)));
+        List<Map.Entry<String,Integer>> list = new ArrayList<>(answer1.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                if(o2.getValue().compareTo(o1.getValue())==0){
+                    return o2.getKey().compareTo(o1.getKey());
+                }
+                return  o2.getValue().compareTo(o1.getValue());
+            }
+        });
+        Map<String, Integer> answer=list.stream().collect(Collectors.toMap(Map.Entry<String,Integer>::getKey,Map.Entry<String,Integer>::getValue,
+                (v1,v2)->v1, LinkedHashMap::new));
         return answer;
     }
 
     public Map<String, List<List<String>>> getCourseListOfInstructor(){
-        return null;
+        Stack<List> stack=new Stack<>();
+        List<course> answer= getCourses().toList();
+        for (course cd:
+             answer) {
+            answer.stream().map(n->{
+                stack.push(Arrays.asList(n.getInstructors().split(",")));
+                return n;
+            }).collect(
+                    Collectors.toMap(stack.pop().stream().limit(1),,(v1, v2)->v1,LinkedHashMap::new)
+            );
+        }
+
+        return answer3;
     }
     public List<String> getCourses(int topK, String by){
         return null;
